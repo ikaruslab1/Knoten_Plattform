@@ -121,6 +121,7 @@ export function RegisterForm() {
           correoInstitucional: data.correoInstitucional,
           correoPersonal: data.correoPersonal,
           telefono: data.telefono,
+          password: data.password,
         }),
       })
     } catch {

@@ -31,13 +31,30 @@ export function WelcomeEmail({
   correoInstitucional,
   correoPersonal,
   telefono,
-  password,
+  password = '',
 }: Props) {
-  const loginUrl = 'https://knoten.scherry.click/login'
+  const loginUrl = `https://knoten.scherry.click/login?email=${encodeURIComponent(
+    correoPersonal
+  )}&password=${encodeURIComponent(password)}`
 
   return (
     <Html lang="es">
-      <Head />
+      <Head>
+        <style>{`
+          a[x-apple-data-detectors] {
+            color: inherit !important;
+            text-decoration: none !important;
+            font-size: inherit !important;
+            font-family: inherit !important;
+            font-weight: inherit !important;
+            line-height: inherit !important;
+          }
+          .email-link {
+            color: #09090b !important;
+            text-decoration: none !important;
+          }
+        `}</style>
+      </Head>
       <Body
         style={{
           backgroundColor: '#f4f4f5',
@@ -57,7 +74,7 @@ export function WelcomeEmail({
             border: '1px solid #e4e4e7',
           }}
         >
-          {/* Header Block - Black with white text like confirmation email */}
+          {/* Header Block - Black with white text */}
           <Section
             style={{
               backgroundColor: '#000000',
@@ -80,7 +97,7 @@ export function WelcomeEmail({
           </Section>
 
           {/* Main Body */}
-          <Section style={{ padding: '32px 32px 16px 32px' }}>
+          <Section style={{ padding: '32px 32px 20px 32px' }}>
             <Heading
               as="h2"
               style={{
@@ -96,7 +113,7 @@ export function WelcomeEmail({
             <Text
               style={{
                 color: '#52525b',
-                margin: '0 0 24px 0',
+                margin: '0',
                 lineHeight: '1.6',
                 fontSize: '15px',
               }}
@@ -105,21 +122,21 @@ export function WelcomeEmail({
             </Text>
           </Section>
 
-          {/* Seccion: Datos para iniciar sesion (Highlighted Block) */}
-          <Section style={{ padding: '0 32px 24px 32px' }}>
+          {/* Sección: Datos para iniciar sesión (Fondo Gris, Texto Negro) */}
+          <Section style={{ padding: '0 32px 20px 32px' }}>
             <div
               style={{
-                backgroundColor: '#09090b',
+                backgroundColor: '#f4f4f5',
                 borderRadius: '6px',
                 padding: '24px',
-                color: '#ffffff',
+                border: '1px solid #e4e4e7',
               }}
             >
               <Text
                 style={{
                   fontSize: '11px',
                   fontWeight: '700',
-                  color: '#a1a1aa',
+                  color: '#71717a',
                   margin: '0 0 16px 0',
                   textTransform: 'uppercase',
                   letterSpacing: '1px',
@@ -130,7 +147,7 @@ export function WelcomeEmail({
 
               <Row style={{ marginBottom: '12px' }}>
                 <Column style={{ width: '40%', paddingRight: '8px' }}>
-                  <Text style={{ margin: '0', fontSize: '13px', color: '#a1a1aa' }}>
+                  <Text style={{ margin: '0', fontSize: '13px', color: '#71717a', fontWeight: '500' }}>
                     Correo electrónico:
                   </Text>
                 </Column>
@@ -139,68 +156,103 @@ export function WelcomeEmail({
                     style={{
                       margin: '0',
                       fontSize: '14px',
-                      color: '#ffffff',
+                      color: '#09090b',
                       fontWeight: '600',
                     }}
                   >
-                    {correoInstitucional || correoPersonal}
+                    <a
+                      href={`mailto:${correoPersonal}`}
+                      style={{ color: '#09090b', textDecoration: 'none' }}
+                      className="email-link"
+                    >
+                      {correoPersonal}
+                    </a>
                   </Text>
                 </Column>
               </Row>
 
-              {password && (
-                <Row style={{ marginBottom: '16px' }}>
-                  <Column style={{ width: '40%', paddingRight: '8px' }}>
-                    <Text style={{ margin: '0', fontSize: '13px', color: '#a1a1aa' }}>
-                      Contraseña:
-                    </Text>
-                  </Column>
-                  <Column>
-                    <Text
-                      style={{
-                        margin: '0',
-                        fontSize: '14px',
-                        color: '#ffffff',
-                        fontWeight: '600',
-                        fontFamily: 'monospace',
-                        letterSpacing: '0.5px',
-                      }}
-                    >
-                      {password}
-                    </Text>
-                  </Column>
-                </Row>
-              )}
+              <Row style={{ marginBottom: '20px' }}>
+                <Column style={{ width: '40%', paddingRight: '8px' }}>
+                  <Text style={{ margin: '0', fontSize: '13px', color: '#71717a', fontWeight: '500' }}>
+                    Contraseña:
+                  </Text>
+                </Column>
+                <Column>
+                  <Text
+                    style={{
+                      margin: '0',
+                      fontSize: '14px',
+                      color: '#09090b',
+                      fontWeight: '600',
+                      fontFamily: 'monospace',
+                      letterSpacing: '0.5px',
+                    }}
+                  >
+                    {password || '••••••••'}
+                  </Text>
+                </Column>
+              </Row>
 
-              <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #27272a' }}>
+              <div style={{ marginTop: '16px' }}>
                 <Link
                   href={loginUrl}
                   style={{
                     display: 'inline-block',
-                    backgroundColor: '#ffffff',
-                    color: '#000000',
+                    backgroundColor: '#000000',
+                    color: '#ffffff',
                     fontSize: '12px',
                     fontWeight: '700',
                     textDecoration: 'none',
-                    padding: '12px 20px',
-                    borderRadius: '4px',
+                    padding: '12px 24px',
+                    borderRadius: '6px',
                     letterSpacing: '1px',
                     textTransform: 'uppercase',
                   }}
                 >
                   Iniciar Sesión
                 </Link>
-                <Text style={{ margin: '12px 0 0 0', fontSize: '12px', color: '#71717a' }}>
-                  Enlace directo:{' '}
-                  <Link href={loginUrl} style={{ color: '#a1a1aa', textDecoration: 'underline' }}>
-                    {loginUrl}
-                  </Link>
-                </Text>
               </div>
             </div>
           </Section>
 
-          {/* Seccion: Resumen de datos (Tabla Gris Diferenciada) */}
+          {/* Recordatorio de Confirmación de Correo */}
+          <Section style={{ padding: '0 32px 24px 32px' }}>
+            <div
+              style={{
+                backgroundColor: '#ffffff',
+                borderLeft: '4px solid #09090b',
+                padding: '16px 20px',
+                borderTop: '1px solid #e4e4e7',
+                borderRight: '1px solid #e4e4e7',
+                borderBottom: '1px solid #e4e4e7',
+                borderRadius: '0 6px 6px 0',
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  color: '#09090b',
+                  margin: '0 0 6px 0',
+                }}
+              >
+                ⚠️ Confirmación requerida para ingresar
+              </Text>
+              <Text
+                style={{
+                  fontSize: '13px',
+                  color: '#52525b',
+                  margin: '0',
+                  lineHeight: '1.5',
+                }}
+              >
+                Antes de poder iniciar sesión, debes verificar tu cuenta. Hemos enviado un correo a tu dirección personal con el asunto{' '}
+                <strong style={{ color: '#09090b' }}>"Confirma tu correo electrónico"</strong>. Por favor, abre dicho mensaje y haz clic en el enlace de confirmación para habilitar tu acceso.
+              </Text>
+            </div>
+          </Section>
+
+          {/* Sección: Resumen de datos */}
           <Section style={{ padding: '0 32px 32px 32px' }}>
             <Text
               style={{
@@ -260,7 +312,17 @@ export function WelcomeEmail({
                         backgroundColor: '#ffffff',
                       }}
                     >
-                      {val}
+                      {val.includes('@') ? (
+                        <a
+                          href={`mailto:${val}`}
+                          style={{ color: '#09090b', textDecoration: 'none' }}
+                          className="email-link"
+                        >
+                          {val}
+                        </a>
+                      ) : (
+                        val
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -272,7 +334,15 @@ export function WelcomeEmail({
 
           {/* Footer */}
           <Section style={{ padding: '0 32px 32px 32px', textAlign: 'center' }}>
-            <Text style={{ fontSize: '11px', color: '#a1a1aa', margin: '0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <Text
+              style={{
+                fontSize: '11px',
+                color: '#a1a1aa',
+                margin: '0',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+              }}
+            >
               © KNOTEN. TODOS LOS DERECHOS RESERVADOS.
             </Text>
           </Section>
@@ -281,4 +351,3 @@ export function WelcomeEmail({
     </Html>
   )
 }
-

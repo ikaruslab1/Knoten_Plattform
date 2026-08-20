@@ -20,6 +20,7 @@ export async function POST(request: Request) {
       correoInstitucional,
       correoPersonal,
       telefono,
+      password,
     } = body
 
     const { error } = await resend.emails.send({
@@ -34,6 +35,7 @@ export async function POST(request: Request) {
         correoInstitucional,
         correoPersonal,
         telefono,
+        password,
       }),
     })
 

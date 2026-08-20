@@ -4,22 +4,35 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { loginSchema, type LoginInput } from '@/lib/validations/auth'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
 
-export function LoginForm() {
+function LoginFormContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const emailParam = searchParams.get('email') || ''
+  const passwordParam = searchParams.get('password') || ''
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: emailParam,
+      password: passwordParam,
+    },
   })
+
+  useEffect(() => {
+    if (emailParam) setValue('email', emailParam, { shouldValidate: true })
+    if (passwordParam) setValue('password', passwordParam, { shouldValidate: true })
+  }, [emailParam, passwordParam, setValue])
 
   const onSubmit = async (data: LoginInput) => {
     setLoading(true)
@@ -89,3 +102,12 @@ export function LoginForm() {
     </form>
   )
 }
+
+export function LoginForm() {
+  return (
+    <Suspense fallback={<div className="text-sm text-gray-400 py-4">Cargando formulario...</div>}>
+      <LoginFormContent />
+    </Suspense>
+  )
+}
+
