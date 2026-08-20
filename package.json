@@ -9,9 +9,25 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.3",
+    "@tiptap/extension-font-family": "^3.30.2",
+    "@tiptap/extension-text-style": "^3.30.2",
+    "@tiptap/pm": "^3.30.2",
+    "@tiptap/react": "^3.30.2",
+    "@tiptap/starter-kit": "^3.30.2",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.33.0",
     "next": "16.3.1",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "react-email": "^6.9.2",
+    "react-hook-form": "^7.85.0",
+    "react-hook-form-persist": "^3.0.0",
+    "resend": "^6.20.0",
+    "tailwind-merge": "^3.6.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
