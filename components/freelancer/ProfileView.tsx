@@ -1,5 +1,7 @@
-import { ExternalLink, Briefcase, Award, Globe, Clock } from 'lucide-react'
+import { ExternalLink, Briefcase, Award, Globe, Clock, GraduationCap, CheckCircle2 } from 'lucide-react'
 import { DAYS_OF_WEEK, TIME_BLOCKS } from '@/lib/constants/roles'
+import { parseEstudios, parseDisponibilidad } from '@/lib/validations/freelancer'
+import { AvailabilityGrid } from '@/components/freelancer/AvailabilityGrid'
 
 interface Props {
   userProfile: {
@@ -12,7 +14,7 @@ interface Props {
     especialidades?: string[]
     nivel_experiencia?: string
     software?: string[]
-    habilidades_complementarias?: string
+    habilidades_complementarias?: string | string[]
     enlace_portafolio?: string
     ultimo_grado_estudios?: string
     idiomas?: string[]
@@ -55,11 +57,19 @@ function Section({ title, icon, children }: { title: string; icon?: React.ReactN
 }
 
 export function ProfileView({ userProfile, profile, workHistory, certifications }: Props) {
-  const getTimeLabel = (val: string) =>
-    TIME_BLOCKS.find((b) => b.value === val)?.label || val
+  const parsedAvailability = parseDisponibilidad(profile.disponibilidad)
 
-  const availableDays = DAYS_OF_WEEK.filter(
-    (d) => profile.disponibilidad?.[d.value]
+  const habilidadesComplementariasList: string[] = Array.isArray(profile.habilidades_complementarias)
+    ? profile.habilidades_complementarias
+    : typeof profile.habilidades_complementarias === 'string' && profile.habilidades_complementarias.trim()
+    ? (profile.habilidades_complementarias.startsWith('[')
+        ? (() => { try { return JSON.parse(profile.habilidades_complementarias) } catch { return profile.habilidades_complementarias.split(',').map((s) => s.trim()).filter(Boolean) } })()
+        : profile.habilidades_complementarias.split(',').map((s) => s.trim()).filter(Boolean))
+    : []
+
+  const estudiosList = parseEstudios(profile.ultimo_grado_estudios)
+  const activeEstudios = estudiosList.filter(
+    (item) => item.seleccionado && item.carrera && item.carrera.trim() !== ''
   )
 
   return (
@@ -90,7 +100,10 @@ export function ProfileView({ userProfile, profile, workHistory, certifications 
         </div>
 
         {profile.resumen_profesional && (
-          <p className="text-gray-600 mt-4 leading-relaxed">{profile.resumen_profesional}</p>
+          <div
+            className="prose max-w-none text-gray-600 mt-4 leading-relaxed [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+            dangerouslySetInnerHTML={{ __html: profile.resumen_profesional }}
+          />
         )}
       </div>
 
@@ -103,14 +116,23 @@ export function ProfileView({ userProfile, profile, workHistory, certifications 
         </Section>
       )}
 
-      {/* Software */}
-      {profile.software && profile.software.length > 0 && (
+      {/* Software y Herramientas */}
+      {((profile.software && profile.software.length > 0) || habilidadesComplementariasList.length > 0) && (
         <Section title="Software y herramientas">
-          <div className="flex flex-wrap gap-2">
-            {profile.software.map((s) => <Tag key={s} label={s} />)}
-          </div>
-          {profile.habilidades_complementarias && (
-            <p className="text-sm text-gray-500 mt-2">{profile.habilidades_complementarias}</p>
+          {profile.software && profile.software.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {profile.software.map((s) => <Tag key={s} label={s} />)}
+            </div>
+          )}
+          {habilidadesComplementariasList.length > 0 && (
+            <div className={profile.software && profile.software.length > 0 ? "mt-4" : ""}>
+              {profile.software && profile.software.length > 0 && (
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Habilidades complementarias</p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {habilidadesComplementariasList.map((h) => <Tag key={h} label={h} />)}
+              </div>
+            </div>
           )}
         </Section>
       )}
@@ -143,9 +165,43 @@ export function ProfileView({ userProfile, profile, workHistory, certifications 
       )}
 
       {/* Education */}
-      {profile.ultimo_grado_estudios && (
-        <Section title="Formación académica">
-          <p className="text-sm text-gray-700">{profile.ultimo_grado_estudios}</p>
+      {activeEstudios.length > 0 && (
+        <Section title="Formación académica" icon={<GraduationCap className="w-4 h-4" />}>
+          <div className="space-y-3">
+            {activeEstudios.map((item, idx) => (
+              <div
+                key={idx}
+                className="flex items-start justify-between gap-3 p-4 rounded-xl border border-gray-100 bg-gray-50/60 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-white rounded-lg border border-gray-100 shadow-2xs shrink-0 text-gray-700 mt-0.5">
+                    <GraduationCap className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900 text-sm">
+                      {item.tipo}: {item.carrera}
+                    </h4>
+                    <p className="text-xs text-gray-400 mt-0.5 capitalize">
+                      Grado {item.tipo.toLowerCase()}
+                    </p>
+                  </div>
+                </div>
+                <div className="shrink-0">
+                  {item.estado === 'en_curso' ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200/60 rounded-full">
+                      <Clock className="w-3 h-3 text-amber-600" />
+                      En curso
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60 rounded-full">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      Terminado
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </Section>
       )}
 
@@ -187,18 +243,9 @@ export function ProfileView({ userProfile, profile, workHistory, certifications 
       )}
 
       {/* Availability */}
-      {availableDays.length > 0 && (
-        <Section title="Disponibilidad" icon={<Clock className="w-4 h-4" />}>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {availableDays.map((day) => (
-              <div key={day.value} className="border border-gray-100 rounded-xl p-3">
-                <p className="text-xs font-medium text-gray-700">{day.label}</p>
-                <p className="text-xs text-gray-400 mt-0.5">
-                  {getTimeLabel(profile.disponibilidad![day.value])}
-                </p>
-              </div>
-            ))}
-          </div>
+      {parsedAvailability.activeDays.length > 0 && (
+        <Section title="Disponibilidad horaria" icon={<Clock className="w-4 h-4" />}>
+          <AvailabilityGrid value={profile.disponibilidad} readOnly={true} />
         </Section>
       )}
     </div>
