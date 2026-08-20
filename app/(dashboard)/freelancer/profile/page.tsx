@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { ProfileView } from '@/components/freelancer/ProfileView'
+import { StyledProfileView } from '@/components/freelancer/StyledProfileView'
 import Link from 'next/link'
+import { Palette } from 'lucide-react'
 
 export default async function FreelancerProfilePage() {
   const supabase = await createClient()
@@ -72,14 +73,21 @@ export default async function FreelancerProfilePage() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Edit button */}
+      {/* Action buttons */}
       {profile.estado === 'disponible' && (
-        <div className="flex justify-end mb-6">
+        <div className="flex justify-end gap-2 mb-6">
           <Link
             href="/freelancer/profile/edit"
             className="border border-gray-200 text-gray-700 rounded-xl px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
           >
             Editar perfil
+          </Link>
+          <Link
+            href="/freelancer/profile/theme"
+            className="flex items-center gap-1.5 border border-gray-200 text-gray-700 rounded-xl px-4 py-2 text-sm hover:bg-gray-50 transition-colors"
+          >
+            <Palette className="w-3.5 h-3.5" />
+            Aspecto visual
           </Link>
         </div>
       )}
@@ -95,7 +103,8 @@ export default async function FreelancerProfilePage() {
         </div>
       )}
 
-      <ProfileView
+      <StyledProfileView
+        theme={profile.profile_theme ?? null}
         userProfile={userProfile!}
         profile={profile}
         workHistory={workHistory || []}

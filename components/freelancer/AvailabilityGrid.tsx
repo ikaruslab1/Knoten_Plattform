@@ -165,7 +165,7 @@ export function AvailabilityGrid({ value, onChange, readOnly = false }: Props) {
             </button>
           </div>
 
-          {/* Days Activation Buttons (High Contrast & Noticeable Difference) */}
+          {/* Days Activation Buttons */}
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
             {DAYS_OF_WEEK.map((day) => {
               const isActive = activeDaysSet.has(day.value)
@@ -179,6 +179,15 @@ export function AvailabilityGrid({ value, onChange, readOnly = false }: Props) {
                       ? 'bg-black text-white border-2 border-black shadow-md scale-[1.02]'
                       : 'bg-gray-100/80 text-gray-400 border-2 border-dashed border-gray-300 opacity-60 hover:opacity-100 hover:border-gray-400 hover:bg-gray-100'
                   }`}
+                  style={
+                    isActive
+                      ? {
+                          backgroundColor: 'var(--pt-horario-active-bg, #111111)',
+                          borderColor: 'var(--pt-horario-active-bg, #111111)',
+                          color: 'var(--pt-horario-active-text, #ffffff)',
+                        }
+                      : undefined
+                  }
                 >
                   <span>{day.shortLabel}</span>
                   <span
@@ -197,18 +206,25 @@ export function AvailabilityGrid({ value, onChange, readOnly = false }: Props) {
 
       {/* 2D MATRIX GRID / CHART */}
       {readOnly ? (
-        /* PUBLISHED PROFILE MODE: Borderless, Gapless 2D Matrix Chart - No Vertical Scroll on Desktop */
-        <div className="overflow-x-auto overflow-y-hidden md:overflow-visible pt-6 pb-2">
+        /* PUBLISHED PROFILE MODE: Custom themed 2D Matrix Chart */
+        <div className="overflow-x-auto overflow-y-hidden md:overflow-visible pt-4 pb-2">
           <table className="w-full border-collapse border-0 text-left min-w-[500px] md:min-w-full">
             <thead>
               <tr>
                 {/* Y-Axis Label Header */}
-                <th className="p-0 pb-2 w-16 text-center text-[11px] font-bold text-gray-400 uppercase tracking-wider border-0">
+                <th
+                  className="p-0 pb-2 w-16 text-center text-[11px] font-bold uppercase tracking-wider border-0"
+                  style={{ color: 'var(--pt-horario-header-text, #9ca3af)' }}
+                >
                   Hora
                 </th>
                 {/* X-Axis Header: Abbreviated Day Names */}
                 {DAYS_OF_WEEK.map((day) => (
-                  <th key={day.value} className="p-0 pb-2 text-center text-xs font-bold text-gray-700 border-0">
+                  <th
+                    key={day.value}
+                    className="p-0 pb-2 text-center text-xs font-bold border-0"
+                    style={{ color: 'var(--pt-horario-header-text, #374151)' }}
+                  >
                     {day.shortLabel}
                   </th>
                 ))}
@@ -217,12 +233,15 @@ export function AvailabilityGrid({ value, onChange, readOnly = false }: Props) {
             <tbody>
               {HOURLY_SLOTS.map((slot) => (
                 <tr key={slot.id} className="border-0">
-                  {/* Y-Axis Hour Label (only starting hour: e.g., 07:00, 08:00) */}
-                  <td className="p-0 py-1 text-center text-[11px] font-medium text-gray-400 border-0 shrink-0 select-none pr-2">
+                  {/* Y-Axis Hour Label */}
+                  <td
+                    className="p-0 py-1 text-center text-[11px] font-medium border-0 shrink-0 select-none pr-2"
+                    style={{ color: 'var(--pt-horario-header-text, #9ca3af)' }}
+                  >
                     {slot.startHour}
                   </td>
 
-                  {/* Matrix Cells: Edge-to-edge touching blocks with NO borders/gaps */}
+                  {/* Matrix Cells: Custom Theme Styles Applied */}
                   {DAYS_OF_WEEK.map((day) => {
                     const isActive = activeDaysSet.has(day.value)
                     const daySlots = parsed.slots[day.value] || []
@@ -233,19 +252,33 @@ export function AvailabilityGrid({ value, onChange, readOnly = false }: Props) {
                       : `${day.label} ${slot.startHour}: No disponible`
 
                     return (
-                      <td key={`${day.value}-${slot.id}`} className="p-0 border-0 align-middle">
+                      <td key={`${day.value}-${slot.id}`} className="p-0.5 border-0 align-middle">
                         <div
-                          className={`relative group w-full h-7 transition-colors ${
-                            isSelected ? 'bg-black cursor-pointer' : 'bg-gray-200/80'
-                          }`}
+                          className="relative group w-full h-7 transition-all"
+                          style={{
+                            backgroundColor: isSelected
+                              ? 'var(--pt-horario-active-bg, #111111)'
+                              : 'var(--pt-horario-inactive-bg, rgba(229, 231, 235, 0.8))',
+                            borderRadius: 'var(--pt-horario-border-radius, 2px)',
+                            border: `1px solid var(--pt-horario-border-color, transparent)`,
+                          }}
                           title={hoverTitle}
                         >
                           {isSelected && (
                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center pointer-events-none z-50 whitespace-nowrap">
-                              <div className="bg-gray-900 text-white text-[11px] font-medium px-2.5 py-1 rounded-md shadow-xl border border-gray-800">
+                              <div
+                                className="text-[11px] font-medium px-2.5 py-1 rounded-md shadow-xl"
+                                style={{
+                                  backgroundColor: 'var(--pt-horario-active-bg, #111111)',
+                                  color: 'var(--pt-horario-active-text, #ffffff)',
+                                }}
+                              >
                                 <span className="font-bold">{day.label}:</span> {range.start} - {range.end}
                               </div>
-                              <div className="w-2 h-2 bg-gray-900 rotate-45 -mt-1" />
+                              <div
+                                className="w-2 h-2 rotate-45 -mt-1"
+                                style={{ backgroundColor: 'var(--pt-horario-active-bg, #111111)' }}
+                              />
                             </div>
                           )}
                         </div>
@@ -258,20 +291,21 @@ export function AvailabilityGrid({ value, onChange, readOnly = false }: Props) {
           </table>
         </div>
       ) : (
-        /* EDIT MODE: Interactive 2D Matrix Grid - No Vertical Scroll on Desktop */
-        <div className="border border-gray-200 rounded-2xl bg-white">
+        /* EDIT MODE: Interactive 2D Matrix Grid */
+        <div
+          className="border rounded-2xl bg-white"
+          style={{ borderColor: 'var(--pt-horario-border-color, #e5e7eb)' }}
+        >
           <div className="overflow-x-auto overflow-y-hidden md:overflow-visible pt-6 pb-2 rounded-2xl">
             <table className="w-full border-collapse text-left min-w-[550px] md:min-w-full">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-200">
-                  {/* Y-Axis Label Header */}
+                <tr className="bg-gray-50 border-b" style={{ borderColor: 'var(--pt-horario-border-color, #e5e7eb)' }}>
                   <th className="py-3 px-3 w-20 text-center text-[11px] font-bold text-gray-400 uppercase tracking-wider border-r border-gray-200 shrink-0">
                     <div className="flex items-center justify-center gap-1">
                       <Clock className="w-3 h-3 text-gray-400" />
                       <span>Hora</span>
                     </div>
                   </th>
-                  {/* X-Axis Header: Abbreviated Day Names */}
                   {DAYS_OF_WEEK.map((day) => {
                     const isActive = activeDaysSet.has(day.value)
                     const daySlots = parsed.slots[day.value] || []
@@ -316,16 +350,15 @@ export function AvailabilityGrid({ value, onChange, readOnly = false }: Props) {
                 {HOURLY_SLOTS.map((slot, rowIdx) => (
                   <tr
                     key={slot.id}
-                    className={`border-b border-gray-100 last:border-b-0 ${
+                    className={`border-b last:border-b-0 ${
                       rowIdx % 2 === 1 ? 'bg-gray-50/20' : ''
                     }`}
+                    style={{ borderColor: 'var(--pt-horario-border-color, #f3f4f6)' }}
                   >
-                    {/* Y-Axis Row Label: Hour starting format (07:00, 08:00, etc.) */}
-                    <td className="py-2.5 px-3 text-center border-r border-gray-200 bg-gray-50/60 text-[11px] font-semibold text-gray-600 tracking-tight shrink-0 select-none">
+                    <td className="py-2.5 px-3 text-center border-r bg-gray-50/60 text-[11px] font-semibold text-gray-600 tracking-tight shrink-0 select-none" style={{ borderColor: 'var(--pt-horario-border-color, #e5e7eb)' }}>
                       {slot.startHour}
                     </td>
 
-                    {/* X-Axis Cells for each Day */}
                     {DAYS_OF_WEEK.map((day) => {
                       const isActive = activeDaysSet.has(day.value)
                       const daySlots = parsed.slots[day.value] || []
@@ -338,25 +371,44 @@ export function AvailabilityGrid({ value, onChange, readOnly = false }: Props) {
                       return (
                         <td
                           key={`${day.value}-${slot.id}`}
-                          className="p-1 border-r border-gray-100 last:border-r-0 text-center align-middle"
+                          className="p-1 border-r last:border-r-0 text-center align-middle"
+                          style={{ borderColor: 'var(--pt-horario-border-color, #f3f4f6)' }}
                         >
                           <div
                             onClick={() => !readOnly && isActive && toggleSlot(day.value, slot.id)}
-                            className={`relative group h-8 rounded-lg flex items-center justify-center transition-all select-none ${
+                            className={`relative group h-8 flex items-center justify-center transition-all select-none ${
                               isSelected
-                                ? 'bg-black text-white shadow-xs cursor-pointer'
+                                ? 'shadow-xs cursor-pointer'
                                 : isActive
                                 ? 'bg-gray-100 hover:bg-gray-200 text-gray-400 cursor-pointer hover:scale-[0.98]'
                                 : 'bg-gray-100/50 opacity-40 cursor-not-allowed'
                             }`}
+                            style={{
+                              backgroundColor: isSelected
+                                ? 'var(--pt-horario-active-bg, #111111)'
+                                : undefined,
+                              color: isSelected
+                                ? 'var(--pt-horario-active-text, #ffffff)'
+                                : undefined,
+                              borderRadius: 'var(--pt-horario-border-radius, 8px)',
+                            }}
                             title={hoverTitle}
                           >
                             {isSelected && (
                               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center pointer-events-none z-50 whitespace-nowrap">
-                                <div className="bg-gray-900 text-white text-[11px] font-medium px-2.5 py-1 rounded-md shadow-xl border border-gray-800">
+                                <div
+                                  className="text-[11px] font-medium px-2.5 py-1 rounded-md shadow-xl"
+                                  style={{
+                                    backgroundColor: 'var(--pt-horario-active-bg, #111111)',
+                                    color: 'var(--pt-horario-active-text, #ffffff)',
+                                  }}
+                                >
                                   <span className="font-bold">{day.label}:</span> {range.start} - {range.end}
                                 </div>
-                                <div className="w-2 h-2 bg-gray-900 rotate-45 -mt-1" />
+                                <div
+                                  className="w-2 h-2 rotate-45 -mt-1"
+                                  style={{ backgroundColor: 'var(--pt-horario-active-bg, #111111)' }}
+                                />
                               </div>
                             )}
                           </div>
@@ -371,16 +423,28 @@ export function AvailabilityGrid({ value, onChange, readOnly = false }: Props) {
         </div>
       )}
 
-      {/* EXPLANATION OF COLORS - Placed at the VERY BOTTOM */}
+      {/* EXPLANATION OF COLORS */}
       <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-gray-600 pt-2 px-1 border-t border-gray-100">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 rounded-xs bg-black inline-block shadow-2xs" />
+            <span
+              className="w-3.5 h-3.5 inline-block shadow-2xs transition-all"
+              style={{
+                backgroundColor: 'var(--pt-horario-active-bg, #111111)',
+                borderRadius: 'var(--pt-horario-border-radius, 2px)',
+              }}
+            />
             <span className="font-semibold text-gray-900">Bloque seleccionado</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3.5 h-3.5 rounded-xs bg-gray-200 border border-gray-300 inline-block" />
-            <span className="text-gray-500">No seleccionado / Día inactivo</span>
+            <span
+              className="w-3.5 h-3.5 border border-gray-300 inline-block transition-all"
+              style={{
+                backgroundColor: 'var(--pt-horario-inactive-bg, #e5e7eb)',
+                borderRadius: 'var(--pt-horario-border-radius, 2px)',
+              }}
+            />
+            <span className="text-gray-500">No seleccionado</span>
           </div>
         </div>
         {!readOnly && (
