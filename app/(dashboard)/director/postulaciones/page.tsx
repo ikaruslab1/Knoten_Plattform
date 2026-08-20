@@ -46,6 +46,7 @@ export default async function DirectorPostulacionesPage() {
       ),
       vacantes!vacante_id (
         id,
+        equipo,
         roles_buscados,
         nivel_requerido,
         modalidad

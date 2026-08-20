@@ -11,10 +11,10 @@ export default async function FreelancerVacantesPage() {
 
   if (!user) redirect('/login')
 
-  // Check if freelancer is already accepted
+  // Check if freelancer is already accepted and get profile data for auto-fill
   const { data: myProfile } = await supabase
     .from('freelancer_profiles')
-    .select('estado, oficina_id')
+    .select('estado, oficina_id, enlace_portafolio, disponibilidad')
     .eq('id', user.id)
     .single()
 
@@ -28,14 +28,17 @@ export default async function FreelancerVacantesPage() {
 
   const appliedVacanteIds = new Set(myPostulaciones?.map((p) => p.vacante_id) || [])
 
-  // Get all published vacantes with office info
+  // Get all published vacantes with full office info
   const { data: vacantes } = await supabase
     .from('vacantes')
     .select(`
       id,
+      equipo,
       num_lugares,
       roles_buscados,
       nivel_requerido,
+      habilidades,
+      responsabilidades,
       modalidad,
       horas_semanales,
       duracion_semanas,
@@ -48,7 +51,8 @@ export default async function FreelancerVacantesPage() {
         nombre,
         logo_url,
         especialidad,
-        manifiesto
+        manifiesto,
+        links_portafolios
       )
     `)
     .eq('publicada', true)
@@ -93,9 +97,9 @@ export default async function FreelancerVacantesPage() {
             return (
               <div
                 key={vacante.id}
-                className="border border-gray-100 rounded-2xl p-6 space-y-4"
+                className="border border-gray-100 rounded-2xl p-6 space-y-4 bg-white"
               >
-                {/* Office info */}
+                {/* Office info preview */}
                 {office && (
                   <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
                     {office.logo_url ? (
@@ -112,7 +116,9 @@ export default async function FreelancerVacantesPage() {
                     <div>
                       <p className="font-semibold text-gray-900">{office.nombre}</p>
                       {office.manifiesto && (
-                        <p className="text-xs text-gray-400 line-clamp-1">{office.manifiesto}</p>
+                        <p className="text-xs text-gray-400 line-clamp-1">
+                          {office.manifiesto.replace(/<[^>]*>/g, '')}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -129,15 +135,19 @@ export default async function FreelancerVacantesPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400">
+                    {vacante.equipo && (
+                      <span className="font-semibold text-gray-800 bg-gray-100 px-2 py-0.5 rounded-md">
+                        Equipo: {vacante.equipo}
+                      </span>
+                    )}
                     {vacante.nivel_requerido && <span>Nivel: {vacante.nivel_requerido}</span>}
-                    <span>{MODALIDAD_LABELS[vacante.modalidad]}</span>
+                    <span>{MODALIDAD_LABELS[vacante.modalidad] || vacante.modalidad}</span>
                     <span>{vacante.horas_semanales}h/semana</span>
                     <span>{vacante.duracion_semanas} {vacante.duracion_semanas === 1 ? 'semana' : 'semanas'}</span>
-                    <span>{vacante.num_lugares} {vacante.num_lugares === 1 ? 'lugar' : 'lugares'}</span>
                   </div>
                 </div>
 
-                {/* Apply button */}
+                {/* Apply button & split-screen container */}
                 {!isAccepted && (
                   alreadyApplied ? (
                     <div className="text-sm text-gray-400 bg-gray-50 rounded-xl px-4 py-3">
@@ -147,12 +157,32 @@ export default async function FreelancerVacantesPage() {
                     <ApplicationForm
                       vacanteId={vacante.id}
                       freelancerId={user.id}
-                      oficinaNombre={office?.nombre || 'Oficina'}
-                      rolesVacante={vacante.roles_buscados || []}
-                      solicitarPortafolio={vacante.solicitar_portafolio}
-                      solicitarExtracto={vacante.solicitar_extracto}
-                      confirmarCalendario={vacante.confirmar_calendario}
-                      preguntasReclutamiento={vacante.preguntas_reclutamiento || []}
+                      initialPortafolioUrl={myProfile?.enlace_portafolio || ''}
+                      initialDisponibilidad={myProfile?.disponibilidad || null}
+                      office={{
+                        id: office?.id || '',
+                        nombre: office?.nombre || 'Oficina',
+                        logo_url: office?.logo_url,
+                        especialidad: office?.especialidad,
+                        manifiesto: office?.manifiesto,
+                        links_portafolios: office?.links_portafolios || [],
+                      }}
+                      vacante={{
+                        id: vacante.id,
+                        equipo: vacante.equipo,
+                        roles_buscados: vacante.roles_buscados || [],
+                        nivel_requerido: vacante.nivel_requerido,
+                        modalidad: vacante.modalidad,
+                        horas_semanales: vacante.horas_semanales,
+                        duracion_semanas: vacante.duracion_semanas,
+                        num_lugares: vacante.num_lugares,
+                        habilidades: vacante.habilidades || [],
+                        responsabilidades: vacante.responsabilidades || '',
+                        solicitar_portafolio: vacante.solicitar_portafolio,
+                        solicitar_extracto: vacante.solicitar_extracto,
+                        confirmar_calendario: vacante.confirmar_calendario,
+                        preguntas_reclutamiento: vacante.preguntas_reclutamiento || [],
+                      }}
                     />
                   )
                 )}

@@ -18,18 +18,23 @@ export default async function VacanteDetailPage({ params }: Props) {
 
   const { data: office } = await supabase
     .from('offices')
-    .select('id')
+    .select('*')
     .eq('director_id', user.id)
-    .single()
+    .maybeSingle()
 
   if (!office) redirect('/director/profile')
+
+  const { data: existingVacantes } = await supabase
+    .from('vacantes')
+    .select('*')
+    .eq('office_id', office.id)
 
   const { data: vacante } = await supabase
     .from('vacantes')
     .select('*')
     .eq('id', id)
     .eq('office_id', office.id)
-    .single()
+    .maybeSingle()
 
   if (!vacante) redirect('/director/vacantes')
 
@@ -45,21 +50,18 @@ export default async function VacanteDetailPage({ params }: Props) {
           </Link>
           <h1 className="text-2xl font-bold text-gray-900 mt-1">Editar vacante</h1>
         </div>
-        {vacante.publicada && (
-          <Link
-            href={`/director/vacantes/${id}/contrato`}
-            className="text-sm bg-black text-white rounded-xl px-4 py-2 hover:bg-gray-900 transition-colors"
-          >
-            {vacante.contrato_contenido ? 'Ver contrato' : 'Redactar contrato'}
-          </Link>
-        )}
       </div>
 
       <VacanteForm
         officeId={office.id}
+        officeSpecialty={office.especialidad}
+        officeEquipos={office.equipos || {}}
+        existingVacantes={existingVacantes || []}
+        hasOfficeContract={Boolean(office.contrato_contenido && office.contrato_contenido.trim().length > 0)}
         vacanteId={id}
         initialData={{
-          numLugares: vacante.num_lugares,
+          equipo: vacante.equipo || '',
+          numLugares: vacante.num_lugares || 1,
           rolesBuscados: vacante.roles_buscados || [],
           nivelRequerido: vacante.nivel_requerido || '',
           habilidades: vacante.habilidades || [],
@@ -76,3 +78,4 @@ export default async function VacanteDetailPage({ params }: Props) {
     </div>
   )
 }
+

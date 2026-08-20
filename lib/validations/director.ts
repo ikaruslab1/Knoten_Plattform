@@ -4,21 +4,28 @@ export const officeSchema = z.object({
   nombre: z.string().min(1, 'El nombre de la oficina es requerido').max(100),
   manifiesto: z
     .string()
-    .max(400, 'El manifiesto no puede superar los 400 caracteres')
+    .superRefine((val, ctx) => {
+      if (!val) return
+      const plainText = val.replace(/<[^>]*>/g, '').trim()
+      if (plainText.length > 1000) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'El manifiesto no puede superar los 1000 caracteres de texto',
+        })
+      }
+    })
     .optional(),
   especialidad: z.enum(['editorial', 'graficos'], {
     required_error: 'Selecciona una especialidad',
   }),
-  linksPortafolios: z.array(z.string().url('URL inválida')).default([]),
+  equipos: z.record(z.string(), z.number().min(1, 'Mínimo 1 persona por equipo')).default({}),
 })
 
 export type OfficeInput = z.infer<typeof officeSchema>
 
 export const vacanteSchema = z.object({
-  numLugares: z
-    .number()
-    .min(1, 'Mínimo 1 lugar')
-    .max(7, 'Máximo 7 lugares'),
+  equipo: z.string().min(1, 'Selecciona el equipo de la oficina para la vacante'),
+  numLugares: z.number().default(1),
   rolesBuscados: z.array(z.string()).min(1, 'Selecciona al menos un rol'),
   nivelRequerido: z.string().min(1, 'El nivel es requerido'),
   habilidades: z.array(z.string()).default([]),

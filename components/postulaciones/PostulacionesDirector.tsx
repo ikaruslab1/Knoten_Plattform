@@ -31,6 +31,7 @@ interface Postulacion {
   } | null
   vacantes: {
     id: string
+    equipo: string | null
     roles_buscados: string[]
     nivel_requerido: string | null
     modalidad: string
@@ -159,6 +160,11 @@ export function PostulacionesDirector({ postulaciones, directorId }: Props) {
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-400">
+                  {vacante?.equipo && (
+                    <span className="font-semibold text-gray-800 bg-gray-200/80 px-2 py-0.5 rounded-md">
+                      {vacante.equipo}
+                    </span>
+                  )}
                   {fp?.nivel_experiencia && <span>{fp.nivel_experiencia}</span>}
                   {vacante?.roles_buscados?.slice(0, 2).map((r) => (
                     <span key={r}>{r}</span>

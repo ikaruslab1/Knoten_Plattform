@@ -77,9 +77,25 @@ export interface AvailabilityData {
 
 
 export const OFFICE_SPECIALTIES = [
-  { value: 'editorial', label: 'Oficina de diseño editorial' },
-  { value: 'graficos', label: 'Oficina de gráficos' },
+  { value: 'editorial', label: 'Oficina editorial' },
+  { value: 'graficos', label: 'Oficina gráfica' },
 ] as const
+
+export const OFFICE_TEAMS = {
+  editorial: [
+    'Equipo impreso',
+    'Equipo digital',
+    'Equipo de desarrollo de producto',
+  ],
+  graficos: [
+    'Equipo de arte',
+    'Equipo de producción',
+    'Equipo multimedia',
+  ],
+} as const
+
+export type OfficeSpecialty = keyof typeof OFFICE_TEAMS
+
 
 export const DESIGN_ROLES = [
   'Diseñador gráfico',
