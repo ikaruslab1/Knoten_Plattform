@@ -215,43 +215,6 @@ export function WelcomeEmail({
             </div>
           </Section>
 
-          {/* Recordatorio de Confirmación de Correo */}
-          <Section style={{ padding: '0 32px 24px 32px' }}>
-            <div
-              style={{
-                backgroundColor: '#ffffff',
-                borderLeft: '4px solid #09090b',
-                padding: '16px 20px',
-                borderTop: '1px solid #e4e4e7',
-                borderRight: '1px solid #e4e4e7',
-                borderBottom: '1px solid #e4e4e7',
-                borderRadius: '0 6px 6px 0',
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: '13px',
-                  fontWeight: '700',
-                  color: '#09090b',
-                  margin: '0 0 6px 0',
-                }}
-              >
-                ⚠️ Confirmación requerida para ingresar
-              </Text>
-              <Text
-                style={{
-                  fontSize: '13px',
-                  color: '#52525b',
-                  margin: '0',
-                  lineHeight: '1.5',
-                }}
-              >
-                Antes de poder iniciar sesión, debes verificar tu cuenta. Hemos enviado un correo a tu dirección personal con el asunto{' '}
-                <strong style={{ color: '#09090b' }}>"Confirma tu correo electrónico"</strong>. Por favor, abre dicho mensaje y haz clic en el enlace de confirmación para habilitar tu acceso.
-              </Text>
-            </div>
-          </Section>
-
           {/* Sección: Resumen de datos */}
           <Section style={{ padding: '0 32px 32px 32px' }}>
             <Text
@@ -328,6 +291,30 @@ export function WelcomeEmail({
                 ))}
               </tbody>
             </table>
+          </Section>
+
+          {/* Recordatorio de Confirmación de Correo (Subtítulo al final) */}
+          <Section style={{ padding: '0 32px 24px 32px' }}>
+            <div
+              style={{
+                backgroundColor: '#f4f4f5',
+                padding: '12px 16px',
+                borderRadius: '6px',
+                border: '1px solid #e4e4e7',
+                textAlign: 'center',
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: '12px',
+                  color: '#71717a',
+                  margin: '0',
+                  lineHeight: '1.4',
+                }}
+              >
+                Nota: Recuerda verificar tu cuenta haciendo clic en el enlace del correo de confirmación enviado a tu dirección personal antes de iniciar sesión.
+              </Text>
+            </div>
           </Section>
 
           <Hr style={{ borderColor: '#e4e4e7', margin: '0 32px 24px 32px' }} />
