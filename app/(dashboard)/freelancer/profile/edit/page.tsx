@@ -80,7 +80,12 @@ export default async function FreelancerProfileEditPage() {
             : 'Completa cada sección para desbloquear la postulación a vacantes y proyectos.'}
         </p>
       </div>
-      <ProfileForm userId={user.id} initialData={initialData} />
+      <ProfileForm
+        userId={user.id}
+        initialData={initialData}
+        serverUpdatedAt={profile?.updated_at || null}
+        isPublished={!!profile?.publicado}
+      />
     </div>
   )
 }

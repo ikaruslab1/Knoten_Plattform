@@ -14,18 +14,20 @@ import { EstudiosInput } from '@/components/freelancer/EstudiosInput'
 import { AvailabilityGrid } from '@/components/freelancer/AvailabilityGrid'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { useState, useRef } from 'react'
-import useFormPersist from 'react-hook-form-persist'
+import { useState, useRef, useEffect } from 'react'
 import { Plus, X } from 'lucide-react'
 
-const STORAGE_KEY = 'knoten-freelancer-profile-draft'
+const getStorageKey = (uid: string) => `knoten-freelancer-draft-${uid}`
+const LEGACY_STORAGE_KEY = 'knoten-freelancer-profile-draft'
 
 interface Props {
   userId: string
   initialData?: Partial<FreelancerProfileInput>
+  serverUpdatedAt?: string | null
+  isPublished?: boolean
 }
 
-export function ProfileForm({ userId, initialData }: Props) {
+export function ProfileForm({ userId, initialData, serverUpdatedAt, isPublished }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -59,6 +61,7 @@ export function ProfileForm({ userId, initialData }: Props) {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<FreelancerProfileInput>({
     resolver: zodResolver(freelancerProfileSchema) as any,
@@ -77,12 +80,89 @@ export function ProfileForm({ userId, initialData }: Props) {
     },
   })
 
-  // Persist form state to localStorage
-  useFormPersist(STORAGE_KEY, {
-    watch,
-    setValue,
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-  })
+  // Smart Draft Hydration: Discard stale local drafts if DB has a newer published version
+  useEffect(() => {
+    try {
+      localStorage.removeItem(LEGACY_STORAGE_KEY)
+      const storageKey = getStorageKey(userId)
+      const storedRaw = localStorage.getItem(storageKey)
+
+      if (storedRaw) {
+        const parsed = JSON.parse(storedRaw)
+        const draftTime = parsed?.updatedAt ? new Date(parsed.updatedAt).getTime() : 0
+        const serverTime = serverUpdatedAt ? new Date(serverUpdatedAt).getTime() : 0
+
+        // If server version is newer or equal, or if published version doesn't match, discard stale draft
+        if (serverTime && (serverTime >= draftTime || (isPublished && parsed?.publishedVersionAt !== serverUpdatedAt))) {
+          localStorage.removeItem(storageKey)
+          if (initialData) {
+            reset(initialData)
+          }
+        } else if (parsed?.data) {
+          // Local uncommitted draft is newer: restore into form
+          reset(parsed.data)
+        } else if (typeof parsed === 'object' && !parsed?.data) {
+          if (!isPublished || !serverTime) {
+            reset(parsed)
+          } else {
+            localStorage.removeItem(storageKey)
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error hydrating draft', e)
+    }
+  }, [userId, serverUpdatedAt, isPublished, initialData, reset])
+
+  // Persist form changes locally with timestamp metadata
+  useEffect(() => {
+    const storageKey = getStorageKey(userId)
+    const subscription = watch((value) => {
+      try {
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({
+            updatedAt: new Date().toISOString(),
+            publishedVersionAt: serverUpdatedAt,
+            data: value,
+          })
+        )
+      } catch (e) {
+        // Handle quota errors silently
+      }
+    })
+    return () => subscription.unsubscribe()
+  }, [watch, userId, serverUpdatedAt])
+
+  // Realtime multi-device sync via Supabase WebSocket (0 extra polling queries)
+  useEffect(() => {
+    const supabase = createClient()
+    const storageKey = getStorageKey(userId)
+
+    const channel = supabase
+      .channel(`profile-sync-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'freelancer_profiles',
+          filter: `id=eq.${userId}`,
+        },
+        (payload) => {
+          if (payload.new && payload.new.publicado) {
+            // New version published from another device/tab -> clean local draft and refresh
+            localStorage.removeItem(storageKey)
+            router.refresh()
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [userId, router])
 
   // Watch form fields for completion calculations
   const valResumen = watch('resumenProfesional') || ''
@@ -291,7 +371,8 @@ export function ProfileForm({ userId, initialData }: Props) {
     }
 
     if (publish) {
-      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(getStorageKey(userId))
+      localStorage.removeItem(LEGACY_STORAGE_KEY)
       router.push('/freelancer/profile')
     } else {
       setLoading(false)
