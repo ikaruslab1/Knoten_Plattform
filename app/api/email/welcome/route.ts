@@ -8,7 +8,8 @@ export async function POST(request: Request) {
       console.error('[email/welcome] Error: RESEND_API_KEY is not configured')
       return Response.json({ error: 'Mail server configuration error' }, { status: 500 })
     }
-    const resend = new Resend(apiKey)
+    const sanitizedApiKey = apiKey.trim().replace(/^["']|["']$/g, '')
+    const resend = new Resend(sanitizedApiKey)
 
     const body = await request.json()
     const {
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
     } = body
 
     const { error } = await resend.emails.send({
-      from: 'Knoten <noreply@knoten.mx>',
+      from: 'Knoten <noreply@send.knoten.scherry.click>',
       to: [correoPersonal, correoInstitucional].filter(Boolean),
       subject: `Bienvenido a Knoten, ${nombre}`,
       react: WelcomeEmail({

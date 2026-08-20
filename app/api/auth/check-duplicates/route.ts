@@ -11,7 +11,39 @@ export async function POST(request: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
 
-    // Check correo_institucional
+    // 1. Check if numero_cuenta is authorized in allowed_account_numbers table
+    if (numeroCuenta) {
+      const { data: allowedData, error: allowedError } = await supabaseAdmin
+        .from('allowed_account_numbers')
+        .select('numero_cuenta')
+        .eq('numero_cuenta', numeroCuenta.trim())
+        .limit(1)
+
+      if (allowedError || !allowedData || allowedData.length === 0) {
+        return NextResponse.json({
+          isDuplicate: true,
+          field: 'numeroCuenta',
+          message: 'Este número de cuenta no está autorizado para registrarse.',
+        })
+      }
+
+      // Check if numero_cuenta is already registered in profiles
+      const { data: cuentaData } = await supabaseAdmin
+        .from('profiles')
+        .select('id')
+        .eq('numero_cuenta', numeroCuenta.trim())
+        .limit(1)
+
+      if (cuentaData && cuentaData.length > 0) {
+        return NextResponse.json({
+          isDuplicate: true,
+          field: 'numeroCuenta',
+          message: 'Este número de cuenta UNAM ya está registrado.',
+        })
+      }
+    }
+
+    // 2. Check correo_institucional in profiles
     if (correoInstitucional) {
       const { data: instData } = await supabaseAdmin
         .from('profiles')
@@ -28,7 +60,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Check correo_personal
+    // 3. Check correo_personal in profiles
     if (correoPersonal) {
       const { data: persData } = await supabaseAdmin
         .from('profiles')
@@ -45,7 +77,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Check telefono
+    // 4. Check telefono in profiles
     if (telefono) {
       const { data: telData } = await supabaseAdmin
         .from('profiles')
@@ -62,26 +94,9 @@ export async function POST(request: Request) {
       }
     }
 
-    // Check numero_cuenta
-    if (numeroCuenta) {
-      const { data: cuentaData } = await supabaseAdmin
-        .from('profiles')
-        .select('id')
-        .eq('numero_cuenta', numeroCuenta.trim())
-        .limit(1)
-
-      if (cuentaData && cuentaData.length > 0) {
-        return NextResponse.json({
-          isDuplicate: true,
-          field: 'numeroCuenta',
-          message: 'Este número de cuenta UNAM ya está registrado.',
-        })
-      }
-    }
-
     return NextResponse.json({ isDuplicate: false })
   } catch (err) {
-    console.error('Error checking duplicate profile values:', err)
+    console.error('Error checking duplicate/allowed profile values:', err)
     return NextResponse.json(
       { error: 'Error al verificar duplicados en la base de datos' },
       { status: 500 }

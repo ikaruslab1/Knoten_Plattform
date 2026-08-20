@@ -9,7 +9,8 @@ export async function POST(request: Request) {
       console.error('[email/application] Error: RESEND_API_KEY is not configured')
       return Response.json({ error: 'Mail server configuration error' }, { status: 500 })
     }
-    const resend = new Resend(apiKey)
+    const sanitizedApiKey = apiKey.trim().replace(/^["']|["']$/g, '')
+    const resend = new Resend(sanitizedApiKey)
 
     const body = await request.json()
     const { freelancerId, oficinaNombre, rolesVacante } = body
@@ -29,7 +30,7 @@ export async function POST(request: Request) {
     const freelancerNombre = `${profile.nombre} ${profile.apellido_paterno}`
 
     const { error } = await resend.emails.send({
-      from: 'Knoten <noreply@knoten.mx>',
+      from: 'Knoten <noreply@send.knoten.scherry.click>',
       to: [profile.correo_personal],
       subject: `Tu postulación a ${oficinaNombre} fue enviada`,
       react: ApplicationEmail({
