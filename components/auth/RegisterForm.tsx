@@ -75,6 +75,11 @@ export function RegisterForm() {
       // Non-blocking catch
     }
 
+    const appUrl =
+      typeof window !== 'undefined'
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_APP_URL || 'https://knoten.scherry.click'
+
     const supabase = createClient()
     const { error: authError } = await supabase.auth.signUp({
       email: data.correoPersonal,
@@ -89,7 +94,7 @@ export function RegisterForm() {
           correo_personal: data.correoPersonal,
           telefono: data.telefono,
         },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/confirm`,
+        emailRedirectTo: `${appUrl}/confirm`,
       },
     })
 
@@ -103,9 +108,16 @@ export function RegisterForm() {
       return
     }
 
-    // Clear local storage persistence on successful registration
+    // Save credentials in sessionStorage for auto-fill on confirmation page
     if (typeof window !== 'undefined') {
       window.localStorage.removeItem('register-form-data')
+      window.sessionStorage.setItem(
+        'knoten_pending_login',
+        JSON.stringify({
+          email: data.correoPersonal,
+          password: data.password,
+        })
+      )
     }
 
     // Send welcome email via server action
