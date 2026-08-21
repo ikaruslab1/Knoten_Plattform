@@ -109,4 +109,11 @@ export const DESIGN_ROLES = [
   'Diseñador web',
   'Director de arte',
   'Gestor de diseño',
+  'Diseñador editorial',
+  'Diseñador de producto',
+  'Maquetador editorial',
+  'Especialista en preprensa',
+  'Gestor de diseño editorial',
+  'Editor de medios impresos',
+  'Editor de medios digitales'
 ] as const

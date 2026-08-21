@@ -116,21 +116,6 @@ export function ApplicationForm({
       return
     }
 
-    // Send confirmation email
-    try {
-      await fetch('/api/email/application', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          freelancerId,
-          oficinaNombre: office.nombre,
-          rolesVacante: vacante.roles_buscados,
-        }),
-      })
-    } catch {
-      // Non-critical
-    }
-
     setIsOpen(false)
     router.refresh()
   }
@@ -467,9 +452,16 @@ export function ApplicationForm({
                     <span className="text-xs font-semibold text-gray-700 block">
                       Responsabilidades y alcance
                     </span>
-                    <div className="text-xs text-gray-600 bg-gray-50 p-3.5 rounded-xl border border-gray-100 leading-relaxed whitespace-pre-line">
-                      {vacante.responsabilidades}
-                    </div>
+                    {vacante.responsabilidades.trim().startsWith('<') ? (
+                      <div
+                        className="text-xs text-gray-600 bg-gray-50 p-3.5 rounded-xl border border-gray-100 leading-relaxed prose max-w-none prose-p:my-1 prose-xs"
+                        dangerouslySetInnerHTML={{ __html: vacante.responsabilidades }}
+                      />
+                    ) : (
+                      <div className="text-xs text-gray-600 bg-gray-50 p-3.5 rounded-xl border border-gray-100 leading-relaxed whitespace-pre-line">
+                        {vacante.responsabilidades}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

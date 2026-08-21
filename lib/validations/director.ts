@@ -29,7 +29,22 @@ export const vacanteSchema = z.object({
   rolesBuscados: z.array(z.string()).min(1, 'Selecciona al menos un rol'),
   nivelRequerido: z.string().min(1, 'El nivel es requerido'),
   habilidades: z.array(z.string()).default([]),
-  responsabilidades: z.string().min(10, 'Describe las responsabilidades').max(2000),
+  responsabilidades: z
+    .string()
+    .superRefine((val, ctx) => {
+      const plainText = (val || '').replace(/<[^>]*>/g, '').trim()
+      if (plainText.length < 10) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Describe las responsabilidades (mínimo 10 caracteres)',
+        })
+      } else if (plainText.length > 2000) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Las responsabilidades no pueden superar los 2000 caracteres',
+        })
+      }
+    }),
   modalidad: z.enum(['en_linea', 'presencial', 'hibrido'], {
     required_error: 'Selecciona una modalidad',
   }),

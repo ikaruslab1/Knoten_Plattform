@@ -12,6 +12,7 @@
     "@hookform/resolvers": "^5.9.1",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
+    "@tiptap/extension-character-count": "^3.30.2",
     "@tiptap/extension-color": "^3.30.2",
     "@tiptap/extension-font-family": "^3.30.2",
     "@tiptap/extension-highlight": "^3.30.2",

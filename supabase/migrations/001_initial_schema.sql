@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS public.offices (
   director_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   nombre TEXT NOT NULL,
   logo_url TEXT,
-  manifiesto TEXT CHECK (char_length(manifiesto) <= 400),
+  manifiesto TEXT CHECK (char_length(manifiesto) <= 4000),
   especialidad TEXT CHECK (especialidad IN ('editorial', 'graficos')),
   links_portafolios TEXT[] DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,

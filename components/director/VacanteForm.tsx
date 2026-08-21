@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { vacanteSchema, type VacanteInput } from '@/lib/validations/director'
 import { EXPERIENCE_LEVELS, MODALITIES, DESIGN_ROLES, OFFICE_TEAMS, type OfficeSpecialty } from '@/lib/constants/roles'
 import { MultiSelect } from '@/components/ui/MultiSelect'
+import { RichTextEditor } from '@/components/ui/RichTextEditor'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -340,11 +341,18 @@ export function VacanteForm({
 
         <div>
           <label className={labelClass}>Responsabilidades</label>
-          <textarea
-            {...register('responsabilidades')}
-            rows={5}
-            placeholder="Describe las responsabilidades del puesto..."
-            className={inputClass}
+          <Controller
+            name="responsabilidades"
+            control={control}
+            render={({ field }) => (
+              <RichTextEditor
+                content={field.value}
+                onChange={field.onChange}
+                maxChars={2000}
+                placeholder="Describe las responsabilidades del puesto..."
+                enableTables={false}
+              />
+            )}
           />
           {errors.responsabilidades && (
             <p className="text-red-500 text-xs mt-1">{errors.responsabilidades.message}</p>
